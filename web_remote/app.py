@@ -5,30 +5,56 @@ app = Flask(__name__)
 last_command = "NONE"
 
 
-# 🔥 mapping (same as assistant)
+# 🔥 SMART CONVERSION (FINAL FIX)
 def convert_command(text):
+    if not text:
+        return "NONE"
+
     text = text.lower()
 
-    mapping = {
-        "room1 light on": "L1ON",
-        "room1 light off": "L1OFF",
-        "room1 fan on": "M1ON",
-        "room1 fan off": "M1OFF",
+    # room1 light
+    if "room1" in text and "light" in text:
+        if "on" in text:
+            return "L1ON"
+        if "off" in text or "band" in text:
+            return "L1OFF"
 
-        "room2 light on": "L2ON",
-        "room2 light off": "L2OFF",
+    # room1 fan
+    if "room1" in text and "fan" in text:
+        if "on" in text:
+            return "M1ON"
+        if "off" in text or "band" in text:
+            return "M1OFF"
 
-        "hall fan on": "M2ON",
-        "hall fan off": "M2OFF",
+    # room2 light
+    if "room2" in text and "light" in text:
+        if "on" in text:
+            return "L2ON"
+        if "off" in text or "band" in text:
+            return "L2OFF"
 
-        "night on": "NIGHTON",
-        "night off": "NIGHTOFF",
+    # hall fan (room3 fan)
+    if ("hall" in text or "room3" in text) and "fan" in text:
+        if "on" in text:
+            return "M2ON"
+        if "off" in text or "band" in text:
+            return "M2OFF"
 
-        "all off": "ALLOFF",
-        "all on": "ALLON",
-    }
+    # 🔥 NIGHT MODE
+    if "night" in text:
+        if "on" in text or "chalu" in text:
+            return "NIGHTON"
+        if "off" in text or "band" in text:
+            return "NIGHTOFF"
 
-    return mapping.get(text, "NONE")
+    # 🔥 ALL DEVICES
+    if "all" in text or "sab" in text:
+        if "off" in text or "band" in text:
+            return "ALLOFF"
+        if "on" in text or "chalu" in text:
+            return "ALLON"
+
+    return "NONE"
 
 
 @app.route("/")
@@ -45,14 +71,15 @@ def command():
 
     print("Received:", cmd)
 
-    # 🔥 convert here
-    last_command = convert_command(cmd)
+    converted = convert_command(cmd)
 
-    print("Converted:", last_command)
+    print("Converted:", converted)
+
+    last_command = converted
 
     return jsonify({
         "status": "ok",
-        "msg": f"Command stored: {last_command}"
+        "msg": f"Command stored: {converted}"
     })
 
 
