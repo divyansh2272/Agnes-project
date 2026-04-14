@@ -2,4 +2,3 @@ flask
 pyttsx3
 SpeechRecognition
 requests
-pyaudio
