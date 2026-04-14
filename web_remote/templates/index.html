@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Home Remote</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background: #f2f2f2;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 20px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .blue { background: #1976d2; }
+        .purple { background: purple; }
+        .red { background: red; }
+
+        #status {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 🎤 floating mic button */
+        .mic {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: green;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            font-size: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Smart Home Remote</h1>
+
+<div class="grid">
+
+<button class="blue" onclick="sendCommand('room1 light on')">Room1 Light ON</button>
+<button class="blue" onclick="sendCommand('room1 light off')">Room1 Light OFF</button>
+
+<button class="blue" onclick="sendCommand('room1 fan on')">Room1 Fan ON</button>
+<button class="blue" onclick="sendCommand('room1 fan off')">Room1 Fan OFF</button>
+
+<button class="blue" onclick="sendCommand('room2 light on')">Room2 Light ON</button>
+<button class="blue" onclick="sendCommand('room2 light off')">Room2 Light OFF</button>
+
+<button class="blue" onclick="sendCommand('room3 light on')">Hall Light ON</button>
+<button class="blue" onclick="sendCommand('room3 light off')">Hall Light OFF</button>
+
+<button class="blue" onclick="sendCommand('room3 fan on')">Hall Fan ON</button>
+<button class="blue" onclick="sendCommand('room3 fan off')">Hall Fan OFF</button>
+
+<button class="purple" onclick="sendCommand('night mode on')">Night Mode ON</button>
+<button class="purple" onclick="sendCommand('night mode off')">Night Mode OFF</button>
+
+<button class="red" onclick="sendCommand('all devices off')">🚨 ALL OFF</button>
+
+</div>
+
+<p id="status">Waiting...</p>
+
+<button class="mic" onclick="startVoice()">🎤</button>
+
+<script>
+function sendCommand(command) {
+    document.getElementById("status").innerText = "Sending...";
+
+    fetch("/command", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ command: command })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("status").innerText = data.msg;
+    })
+    .catch(() => {
+        document.getElementById("status").innerText = "Server error";
+    });
+}
+
+
+// 🎤 Voice control
+function startVoice() {
+    const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+
+    recognition.lang = "en-IN";
+    recognition.start();
+
+    document.getElementById("status").innerText = "🎤 Listening...";
+
+    recognition.onresult = function(event) {
+        const text = event.results[0][0].transcript;
+        document.getElementById("status").innerText = "You said: " + text;
+
+        sendCommand(text);
+    };
+
+    recognition.onerror = function() {
+        document.getElementById("status").innerText = "❌ Mic error";
+    };
+}
+</script>
+
+</body>
+</html>
